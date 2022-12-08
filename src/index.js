@@ -12,17 +12,25 @@ const io = socketio(server);
 
 app.use(express.static(publicDirectoryPath));
 
-let count = 0;
-
 io.on("connection", (socket) => {
   console.log("new websocket connection");
 
-  socket.emit("countUpdated", count);
+  socket.emit("message", "Welcome!");
+  socket.broadcast.emit("message", "A new user has joined!");
 
-  socket.on("increment", () => {
-    count++;
-    //socket.emit("countUpdated", count);
-    io.emit("countUpdated", count);
+  socket.on("sendMessage", (message) => {
+    io.emit("message", message);
+  });
+
+  socket.on("sendLocation", (location) => {
+    io.emit(
+      "message",
+      `https://google.com/maps?q=${location.lat},${location.lon}`
+    );
+  });
+
+  socket.on("disconnect", () => {
+    io.emit("message", "A user has left!");
   });
 });
 
